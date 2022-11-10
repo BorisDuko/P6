@@ -51,7 +51,7 @@ exports.login = (req, res, next) => {
             "SECRET_TOKEN_FOR_P6_PROJECT",
             { expiresIn: "24h" }
           );
-          // we send back the userId and token
+          // send back the userId and token
           res.status(200).json({
             userId: user._id,
             token: token,

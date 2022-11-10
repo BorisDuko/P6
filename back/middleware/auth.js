@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
     // to make sure user is who he really is: req.userId = userId;
     // req.auth = { userId: userId} same thing as:
     // !important - without this line ⤵ sauce.js auth routes doesn't works
-    // req.auth = { userId };
+    req.auth = { userId };
     if (req.body.userId && req.body.userId !== userId) {
       throw "Invalid user ID";
     } else {

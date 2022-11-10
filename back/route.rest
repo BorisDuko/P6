@@ -1,0 +1,15 @@
+GET http://localhost:3000/api/sauces 
+
+###
+
+GET http://localhost:3000/api/sauces/636b8a75fa681d241c2b2f46
+
+###
+
+POST http://localhost:3000/api/sauces
+Content-Type: application/json
+
+{
+    "name": "New peper",
+    "description": "try out newly created peper sauce!"
+}
