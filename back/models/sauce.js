@@ -13,6 +13,8 @@ const sauceSchema = mongoose.Schema({
   usersLiked: [{ type: String, default: 0 }], //add default
   usersDisliked: [{ type: String, default: 0 }],
   userId: { type: String, required: true },
+  // usersLiked: {type: [String]},
+  // usersDisliked: {type: [String]},
 });
 
 module.exports = mongoose.model("Sauce", sauceSchema);

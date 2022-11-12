@@ -34,7 +34,7 @@ exports.login = (req, res, next) => {
         });
       }
       // if user exists
-      // compare entered password with the hash we have in database
+      // compare entered password with the hash that stored in database
       bcrypt
         .compare(req.body.password, user.password)
         .then((valid) => {

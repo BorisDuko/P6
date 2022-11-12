@@ -1,5 +1,6 @@
 const Sauce = require("../models/sauce");
 const fs = require("fs");
+const sauce = require("../models/sauce");
 
 // =======================================
 // rewrite all requests to async await
@@ -113,5 +114,65 @@ exports.deleteSauce = async (req, res, next) => {
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// RATE ONE
+exports.rateSauce = async (req, res, next) => {
+  let rating = req.body.like;
+  console.log(rating);
+  // user liked sauce
+  if (rating === 1) {
+    try {
+      await Sauce.updateOne(
+        { _id: req.params.id },
+        {
+          $push: { usersLiked: req.body.userId },
+          $inc: { likes: +1 },
+        }
+      );
+      res.status(201).json({ message: "User liked the sauce." });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+  // user return like or dislike
+  if (rating === 0) {
+    try {
+      await Sauce.updateOne(
+        { _id: req.params.id },
+        {
+          $inc: { likes: -1 },
+          $pull: { usersLiked: req.body.userId },
+        }
+      );
+      await Sauce.updateOne(
+        { _id: req.params.id },
+        {
+          $inc: { dislikes: +1 },
+          $pull: { usersDisliked: req.body.userId },
+        }
+      );
+      res
+        .status(201)
+        .json({ message: ["User removed like", "User removed dislike"] });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+  // user dislike the sauce
+  if (rating === -1) {
+    try {
+      await Sauce.updateOne(
+        { _id: req.params.id },
+        {
+          $inc: { dislikes: -1 },
+          $push: { usersDisliked: req.body.userId },
+        }
+      );
+      res.status(201).json({ message: "User disliked the sauce." });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
   }
 };
