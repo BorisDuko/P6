@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+require("dotenv").config();
+const USER_TOKEN = process.env.USER_TOKEN;
 
 exports.signup = (req, res, next) => {
   bcrypt.hash(req.body.password, 10).then((hash) => {
@@ -46,11 +48,9 @@ exports.login = (req, res, next) => {
           }
           // if it is valid
           // create new token constant
-          const token = jwt.sign(
-            { userId: user._id },
-            "SECRET_TOKEN_FOR_P6_PROJECT",
-            { expiresIn: "24h" }
-          );
+          const token = jwt.sign({ userId: user._id }, USER_TOKEN, {
+            expiresIn: "24h",
+          });
           // send back the userId and token
           res.status(200).json({
             userId: user._id,

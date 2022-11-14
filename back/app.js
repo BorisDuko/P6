@@ -1,6 +1,3 @@
-// mongoDB PW: iX4tfOmRFzYnL9Uc
-// mongoBD connection: mongodb+srv://Boris:iX4tfOmRFzYnL9Uc@cluster0.ygrkgnh.mongodb.net/?retryWrites=true&w=majority
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -10,11 +7,13 @@ const path = require("path");
 const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
 
+require("dotenv").config();
+
 const app = express();
 
 mongoose
   .connect(
-    "mongodb+srv://Boris:iX4tfOmRFzYnL9Uc@cluster0.ygrkgnh.mongodb.net/?retryWrites=true&w=majority"
+    `mongodb+srv://${process.env.DB_ID}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}.mongodb.net/?retryWrites=true&w=majority`
   )
   .then(() => {
     console.log("Successfully connected to Piiquante MongoDB Atlas!");
