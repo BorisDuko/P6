@@ -131,7 +131,9 @@ exports.rateSauce = async (req, res, next) => {
           $inc: { likes: +1 },
         }
       );
-      res.status(200).json({ message: "User liked the sauce." });
+      res.status(201).json({
+        message: "User liked the sauce.",
+      });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -142,28 +144,27 @@ exports.rateSauce = async (req, res, next) => {
       let chosenSauce = await Sauce.findOne({ _id: req.params.id });
       let userId = req.body.userId;
       for (let i in chosenSauce.usersLiked) {
-        for (let j in chosenSauce.usersDisliked) {
-          if (userId === chosenSauce.usersLiked[i]) {
-            await Sauce.updateOne(
-              { _id: req.params.id },
-
-              {
-                $pull: { usersLiked: req.body.userId },
-                $inc: { likes: -1 },
-              }
-            );
-            res.status(201).json({ message: "User removed like" });
-          }
-          if (userId === chosenSauce.usersDisliked[j]) {
-            await Sauce.updateOne(
-              { _id: req.params.id },
-              {
-                $inc: { dislikes: -1 },
-                $pull: { usersDisliked: req.body.userId },
-              }
-            );
-            res.status(201).json({ message: "User removed dislike" });
-          }
+        if (userId === chosenSauce.usersLiked[i]) {
+          await Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              $pull: { usersLiked: req.body.userId },
+              $inc: { likes: -1 },
+            }
+          );
+          res.status(201).json({ message: "User removed like" });
+        }
+      }
+      for (let j in chosenSauce.usersDisliked) {
+        if (userId === chosenSauce.usersDisliked[j]) {
+          await Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              $inc: { dislikes: -1 },
+              $pull: { usersDisliked: req.body.userId },
+            }
+          );
+          res.status(201).json({ message: "User removed dislike" });
         }
       }
     } catch (error) {
