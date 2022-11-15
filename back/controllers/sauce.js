@@ -2,9 +2,6 @@ const Sauce = require("../models/sauce");
 const fs = require("fs");
 const sauce = require("../models/sauce");
 
-// =======================================
-// rewrite all requests to async await
-
 // GET ALL
 exports.getAllSauces = async (req, res, next) => {
   try {
@@ -27,10 +24,6 @@ exports.createSauce = async (req, res, next) => {
     mainPepper: req.body.sauce.mainPepper,
     imageUrl: url + "/images/" + req.file.filename,
     heat: req.body.sauce.heat,
-    likes: 0, // 0 on creating its zero
-    dislikes: 0, // 0
-    usersLiked: "", //  on creation empty string
-    usersDisliked: "", // ""
     userId: req.body.sauce.userId,
   });
   try {
@@ -104,14 +97,20 @@ exports.deleteSauce = async (req, res, next) => {
   try {
     const sauce = await Sauce.findOne({ _id: req.params.id });
     // get name for database to find file
-    const filename = sauce.imageUrl.split("/images/")[1];
-    // delete file from folder and after from DB
-    fs.unlink("images/" + filename, async () => {
-      await Sauce.deleteOne({ _id: req.params.id });
-      res.status(200).json({
-        message: "Sauce Deleted!",
+    // make sure user is owner of the sauce
+    console.log(req.auth);
+    if (sauce.userId === req.auth.userId) {
+      const filename = sauce.imageUrl.split("/images/")[1];
+      // delete file from folder and after from DB
+      fs.unlink("images/" + filename, async () => {
+        await Sauce.deleteOne({ _id: req.params.id });
+        res.status(200).json({
+          message: "Sauce Deleted!",
+        });
       });
-    });
+    } else {
+      req.status(401).json({ message: "Unauthorized user" });
+    }
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -121,6 +120,7 @@ exports.deleteSauce = async (req, res, next) => {
 exports.rateSauce = async (req, res, next) => {
   let rating = req.body.like;
   console.log(rating);
+  console.log(req.body);
   // user liked sauce
   if (rating === 1) {
     try {

@@ -10,8 +10,6 @@ const sauceSchema = mongoose.Schema({
   likes: { type: Number, default: 0 },
   dislikes: { type: Number, default: 0 },
   // an array of userId's ⤵ as string
-  // usersLiked: [{ type: String, default: 0 }], //add default
-  // usersDisliked: [{ type: String, default: 0 }],
   userId: { type: String, required: true },
   usersLiked: { type: [String] },
   usersDisliked: { type: [String] },
