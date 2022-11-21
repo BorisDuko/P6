@@ -1,24 +1,50 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const validator = require("email-validator");
 require("dotenv").config();
 const USER_TOKEN = process.env.USER_TOKEN;
+// security improvements
+const validator = require("email-validator");
+const passwordValidator = require("password-validator");
 
 exports.signup = async (req, res, next) => {
   try {
+    // email validation
     const emailValid = await validator.validate(req.body.email);
     if (emailValid === false) {
-      // return res.send("Email is not valid. Please try again");
-      return res.status(501).json({
+      return res.status(400).json({
         message: "Email is not valid. Please try again",
       });
     }
+    // password validation
+    const schema = new passwordValidator();
+    schema
+      .is()
+      .min(8)
+      .is()
+      .max(100)
+      .has()
+      .uppercase()
+      .has()
+      .lowercase()
+      .has()
+      .not()
+      .spaces();
+    const validPassword = await schema.validate(req.body.password, {
+      detail: true, // reasons of failed pw validation
+    });
+    if (validPassword === false) {
+      return res.status(400).json({
+        message: "Password is not valid. Please try again",
+      });
+    }
+    // password hashing with salt
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = new User({
       email: req.body.email,
       password: hashedPassword,
     });
+    // if all validations passed - add user
     await user.save();
     res.status(201).json({
       message: "User added successfully!",
