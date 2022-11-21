@@ -38,10 +38,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// need to use bodyParser() if you want the form data
-// to be available in req.body.
-app.use(bodyParser.json());
-
 // actual direction for app and add name from folder
 app.use("/images", express.static(path.join(__dirname, "images")));
 

@@ -1,28 +1,33 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const validator = require("email-validator");
 require("dotenv").config();
 const USER_TOKEN = process.env.USER_TOKEN;
 
-exports.signup = (req, res, next) => {
-  bcrypt.hash(req.body.password, 10).then((hash) => {
+exports.signup = async (req, res, next) => {
+  try {
+    const emailValid = await validator.validate(req.body.email);
+    if (emailValid === false) {
+      // return res.send("Email is not valid. Please try again");
+      return res.status(501).json({
+        message: "Email is not valid. Please try again",
+      });
+    }
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = new User({
       email: req.body.email,
-      password: hash,
+      password: hashedPassword,
     });
-    user
-      .save()
-      .then(() => {
-        res.status(201).json({
-          message: "User added successfully!",
-        });
-      })
-      .catch((error) => {
-        res.status(500).json({
-          error: error,
-        });
-      });
-  });
+    await user.save();
+    res.status(201).json({
+      message: "User added successfully!",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
 exports.login = (req, res, next) => {
