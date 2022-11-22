@@ -51,6 +51,21 @@ exports.modifySauce = async (req, res, next) => {
   if (req.file) {
     const url = req.protocol + "://" + req.get("host");
     req.body.sauce = JSON.parse(req.body.sauce);
+    // delete old image
+    Sauce.findOne({ _id: req.params.id })
+      .then((pickedSauce) => {
+        const filename = pickedSauce.imageUrl.split("/images/")[1];
+        fs.unlink("images/" + filename, (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      })
+      .catch((error) => {
+        res.status(500).json({
+          error: error,
+        });
+      });
     sauce = {
       _id: req.params.id,
       name: req.body.sauce.name,
@@ -65,6 +80,7 @@ exports.modifySauce = async (req, res, next) => {
       usersDisliked: req.body.sauce.usersDisliked,
       userId: req.body.sauce.userId,
     };
+
     // if no new image being uploaded
   } else {
     sauce = {
