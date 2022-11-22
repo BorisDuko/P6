@@ -46,65 +46,71 @@ exports.getOneSauce = async (req, res, next) => {
 
 // MODIFY ONE
 exports.modifySauce = async (req, res, next) => {
-  let sauce = new Sauce({ _id: req.params._id });
-  // if user upload new image
-  if (req.file) {
-    const url = req.protocol + "://" + req.get("host");
-    req.body.sauce = JSON.parse(req.body.sauce);
-    // delete old image
-    Sauce.findOne({ _id: req.params.id })
-      .then((pickedSauce) => {
-        const filename = pickedSauce.imageUrl.split("/images/")[1];
-        fs.unlink("images/" + filename, (err) => {
-          if (err) {
-            console.log(err);
-          }
+  // make sure user is owner of the sauce
+  const sauceToModify = await Sauce.findOne({ _id: req.params.id });
+  if (sauceToModify.userId === req.auth.userId) {
+    let sauce = new Sauce({ _id: req.params._id });
+    // if user upload new image
+    if (req.file) {
+      const url = req.protocol + "://" + req.get("host");
+      req.body.sauce = JSON.parse(req.body.sauce);
+      // delete old image
+      Sauce.findOne({ _id: req.params.id })
+        .then((pickedSauce) => {
+          const filename = pickedSauce.imageUrl.split("/images/")[1];
+          fs.unlink("images/" + filename, (err) => {
+            if (err) {
+              console.log(err);
+            }
+          });
+        })
+        .catch((error) => {
+          res.status(500).json({
+            error: error,
+          });
         });
-      })
-      .catch((error) => {
-        res.status(500).json({
-          error: error,
-        });
+      // update with new image
+      sauce = {
+        _id: req.params.id,
+        name: req.body.sauce.name,
+        manufacturer: req.body.sauce.manufacturer,
+        description: req.body.sauce.description,
+        mainPepper: req.body.sauce.mainPepper,
+        imageUrl: url + "/images/" + req.file.filename,
+        heat: req.body.sauce.heat,
+        likes: req.body.sauce.likes,
+        dislikes: req.body.sauce.dislikes,
+        usersLiked: req.body.sauce.usersLiked,
+        usersDisliked: req.body.sauce.usersDisliked,
+        userId: req.body.sauce.userId,
+      };
+      // if no new image being uploaded
+    } else {
+      sauce = {
+        _id: req.params.id,
+        name: req.body.name,
+        manufacturer: req.body.manufacturer,
+        description: req.body.description,
+        mainPepper: req.body.mainPepper,
+        imageUrl: req.body.imageUrl,
+        heat: req.body.heat,
+        likes: req.body.likes,
+        dislikes: req.body.dislikes,
+        usersLiked: req.body.usersLiked,
+        usersDisliked: req.body.usersDisliked,
+        userId: req.body.userId,
+      };
+    }
+    try {
+      await Sauce.updateOne({ _id: req.params.id }, sauce);
+      res.status(201).json({
+        message: "Sauce updated successfully!",
       });
-    sauce = {
-      _id: req.params.id,
-      name: req.body.sauce.name,
-      manufacturer: req.body.sauce.manufacturer,
-      description: req.body.sauce.description,
-      mainPepper: req.body.sauce.mainPepper,
-      imageUrl: url + "/images/" + req.file.filename,
-      heat: req.body.sauce.heat,
-      likes: req.body.sauce.likes,
-      dislikes: req.body.sauce.dislikes,
-      usersLiked: req.body.sauce.usersLiked,
-      usersDisliked: req.body.sauce.usersDisliked,
-      userId: req.body.sauce.userId,
-    };
-
-    // if no new image being uploaded
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
   } else {
-    sauce = {
-      _id: req.params.id,
-      name: req.body.name,
-      manufacturer: req.body.manufacturer,
-      description: req.body.description,
-      mainPepper: req.body.mainPepper,
-      imageUrl: req.body.imageUrl,
-      heat: req.body.heat,
-      likes: req.body.likes,
-      dislikes: req.body.dislikes,
-      usersLiked: req.body.usersLiked,
-      usersDisliked: req.body.usersDisliked,
-      userId: req.body.userId,
-    };
-  }
-  try {
-    await Sauce.updateOne({ _id: req.params.id }, sauce);
-    res.status(201).json({
-      message: "Sauce updated successfully!",
-    });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+    req.status(401).json({ message: "Unauthorized user" });
   }
 };
 
