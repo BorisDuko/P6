@@ -141,30 +141,13 @@ exports.deleteSauce = async (req, res, next) => {
 // RATE ONE
 exports.rateSauce = async (req, res, next) => {
   let rating = req.body.like;
+  let chosenSauce = await Sauce.findOne({ _id: req.params.id });
+  let userId = req.body.userId;
   console.log(rating);
   console.log(req.body);
-  // user liked sauce
-  if (rating === 1) {
-    try {
-      await Sauce.updateOne(
-        { _id: req.params.id },
-        {
-          $push: { usersLiked: req.body.userId },
-          $inc: { likes: +1 },
-        }
-      );
-      res.status(201).json({
-        message: "User liked the sauce.",
-      });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  }
   // user return like or dislike
   if (rating === 0) {
     try {
-      let chosenSauce = await Sauce.findOne({ _id: req.params.id });
-      let userId = req.body.userId;
       for (let i in chosenSauce.usersLiked) {
         if (userId === chosenSauce.usersLiked[i]) {
           await Sauce.updateOne(
@@ -189,6 +172,31 @@ exports.rateSauce = async (req, res, next) => {
           res.status(201).json({ message: "User removed dislike" });
         }
       }
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+  // user liked sauce
+  if (rating === 1) {
+    try {
+      await Sauce.updateOne(
+        { _id: req.params.id },
+        {
+          $push: { usersLiked: req.body.userId },
+          $inc: { likes: +1 },
+        }
+      );
+      // if user liked more than once remove userId from array
+      chosenSauce.usersLiked = chosenSauce.usersDisliked.filter((item) => {
+        return (
+          chosenSauce.usersLiked.lastIndexOf(item) ==
+          chosenSauce.usersLiked.indexOf(item)
+        );
+      });
+      chosenSauce.likes = chosenSauce.usersLiked.length;
+      res.status(201).json({
+        message: "User liked the sauce.",
+      });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
