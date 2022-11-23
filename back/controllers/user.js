@@ -20,13 +20,15 @@ exports.signup = async (req, res, next) => {
     const schema = new passwordValidator();
     schema
       .is()
-      .min(8)
+      .min(10)
       .is()
       .max(100)
       .has()
       .uppercase()
       .has()
       .lowercase()
+      .has()
+      .digits(2)
       .has()
       .not()
       .spaces();
