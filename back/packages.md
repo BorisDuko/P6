@@ -9,6 +9,7 @@ npm install dotenv
 // security improvements
 npm i email-validator
 npm i password-validator
+npm i helmet
 
 // optional
 npm install -g nodemon

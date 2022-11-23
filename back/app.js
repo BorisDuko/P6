@@ -10,6 +10,7 @@ const userRoutes = require("./routes/user");
 require("dotenv").config();
 
 const app = express();
+app.use(helmet());
 
 mongoose
   .connect(

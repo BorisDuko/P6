@@ -148,7 +148,7 @@ exports.rateSauce = async (req, res, next) => {
   // user liked sauce
   if (rating === 1) {
     for (let l in chosenSauce.usersLiked) {
-      if (userId !== chosenSauce.usersLiked[l]) {
+      if (userId === chosenSauce.usersLiked[l]) {
         return res.status(400).json({ message: error.message });
       } else {
         try {
