@@ -10,6 +10,7 @@ npm install dotenv
 npm i email-validator
 npm i password-validator
 npm i helmet
+npm i express-mongo-sanitize
 
 // optional
 npm install -g nodemon

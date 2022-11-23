@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 // to give path to express for getting static images from folder
 const path = require("path");
 
@@ -12,6 +13,7 @@ require("dotenv").config();
 
 const app = express();
 app.use(helmet());
+app.use(mongoSanitize());
 
 mongoose
   .connect(
