@@ -12,8 +12,6 @@ const userRoutes = require("./routes/user");
 require("dotenv").config();
 
 const app = express();
-app.use(helmet());
-app.use(mongoSanitize());
 
 mongoose
   .connect(
@@ -44,6 +42,10 @@ app.use((req, res, next) => {
 
 // actual direction for app and add name from folder
 app.use("/images", express.static(path.join(__dirname, "images")));
+
+// security measures (2)
+app.use(helmet());
+app.use(mongoSanitize());
 
 app.use("/api/sauces", sauceRoutes);
 app.use("/api/auth", userRoutes);

@@ -147,24 +147,27 @@ exports.rateSauce = async (req, res, next) => {
   console.log(req.body);
   // user liked sauce
   if (rating === 1) {
-    for (let l in chosenSauce.usersLiked) {
-      if (userId === chosenSauce.usersLiked[l]) {
-        return res.status(400).json({ message: error.message });
-      } else {
-        try {
-          await Sauce.updateOne(
-            { _id: req.params.id },
-            {
-              $push: { usersLiked: req.body.userId },
-              $inc: { likes: +1 },
-            }
-          );
-          res.status(201).json({
-            message: "User liked the sauce.",
-          });
-        } catch (error) {
-          res.status(400).json({ message: error.message });
+    if (chosenSauce.usersLiked.length > 0) {
+      // forbid like more than once for the same user
+      for (let l in chosenSauce.usersLiked) {
+        if (userId === chosenSauce.usersLiked[l]) {
+          return res.status(400).json({ message: "Already liked" });
         }
+      }
+    } else {
+      try {
+        await Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $push: { usersLiked: req.body.userId },
+            $inc: { likes: +1 },
+          }
+        );
+        res.status(201).json({
+          message: "User liked the sauce.",
+        });
+      } catch (error) {
+        res.status(400).json({ message: error.message });
       }
     }
   }
@@ -202,17 +205,26 @@ exports.rateSauce = async (req, res, next) => {
 
   // user dislike the sauce
   if (rating === -1) {
-    try {
-      await Sauce.updateOne(
-        { _id: req.params.id },
-        {
-          $inc: { dislikes: +1 },
-          $push: { usersDisliked: req.body.userId },
+    if (chosenSauce.usersDisliked.length > 0) {
+      // forbid dislike more than once for the same user
+      for (let d in chosenSauce.usersDisliked) {
+        if (userId === chosenSauce.usersDisliked[d]) {
+          return res.status(400).json({ message: "Already disliked" });
         }
-      );
-      res.status(201).json({ message: "User disliked the sauce." });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+      }
+    } else {
+      try {
+        await Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $inc: { dislikes: +1 },
+            $push: { usersDisliked: req.body.userId },
+          }
+        );
+        res.status(201).json({ message: "User disliked the sauce." });
+      } catch (error) {
+        res.status(400).json({ message: error.message });
+      }
     }
   }
 };
