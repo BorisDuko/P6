@@ -145,19 +145,18 @@ exports.rateSauce = async (req, res, next) => {
   let rating = req.body.like;
   let chosenSauce = await Sauce.findOne({ _id: req.params.id });
   let userId = req.body.userId;
-  let likedArr = await chosenSauce.usersLiked;
-  let dislikedArr = await chosenSauce.usersDisliked;
   console.log(rating);
   console.log(req.body);
   // user liked sauce
   if (rating === 1) {
-    if (likedArr.length > 0) {
+    if (
+      chosenSauce.usersLiked.includes(userId) ||
+      chosenSauce.usersDisliked.includes(userId)
+    ) {
       // forbid like more than once for the same user
-      for (let l in likedArr) {
-        if (userId === likedArr[l]) {
-          return res.status(400).json({ message: "Already liked" });
-        }
-      }
+      return res
+        .status(400)
+        .json({ message: "Already liked or disliked" });
     } else {
       try {
         await Sauce.updateOne(
@@ -178,45 +177,40 @@ exports.rateSauce = async (req, res, next) => {
   // user return like or dislike
   if (rating === 0) {
     try {
-      for (let i in chosenSauce.usersLiked) {
-        if (userId === chosenSauce.usersLiked[i]) {
-          await Sauce.updateOne(
-            { _id: req.params.id },
-            {
-              $pull: { usersLiked: req.body.userId },
-              $inc: { likes: -1 },
-            }
-          );
-          res.status(201).json({ message: "User removed like" });
-        }
+      if (chosenSauce.usersLiked.includes(userId)) {
+        await Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $pull: { usersLiked: req.body.userId },
+            $inc: { likes: -1 },
+          }
+        );
+        res.status(201).json({ message: "User removed like" });
       }
-      for (let j in chosenSauce.usersDisliked) {
-        if (userId === chosenSauce.usersDisliked[j]) {
-          await Sauce.updateOne(
-            { _id: req.params.id },
-            {
-              $inc: { dislikes: -1 },
-              $pull: { usersDisliked: req.body.userId },
-            }
-          );
-          res.status(201).json({ message: "User removed dislike" });
-        }
+      if (chosenSauce.usersDisliked.includes(userId)) {
+        await Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $inc: { dislikes: -1 },
+            $pull: { usersDisliked: req.body.userId },
+          }
+        );
+        res.status(201).json({ message: "User removed dislike" });
       }
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   }
-
   // user dislike the sauce
   if (rating === -1) {
-    if (dislikedArr.length > 0) {
+    if (
+      chosenSauce.usersLiked.includes(userId) ||
+      chosenSauce.usersDisliked.includes(userId)
+    ) {
       // forbid dislike more than once for the same user
-      for (let d in dislikedArr) {
-        if (userId === dislikedArr[d]) {
-          res.status(400).json({ message: "Already disliked" });
-          // throw new Error();
-        }
-      }
+      return res
+        .status(400)
+        .json({ message: "Already liked or disliked" });
     } else {
       try {
         await Sauce.updateOne(
