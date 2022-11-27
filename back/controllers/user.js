@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 require("dotenv").config();
-const USER_TOKEN = process.env.USER_TOKEN;
+const SECRET_KEY = process.env.SECRET_KEY;
 // security improvements
 const validator = require("email-validator");
 const passwordValidator = require("password-validator");
@@ -81,7 +81,7 @@ exports.login = (req, res, next) => {
           }
           // if it is valid
           // create new token constant
-          const token = jwt.sign({ userId: user._id }, USER_TOKEN, {
+          const token = jwt.sign({ userId: user._id }, SECRET_KEY, {
             expiresIn: "24h",
           });
           // send back the userId and token
