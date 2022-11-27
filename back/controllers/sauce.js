@@ -25,6 +25,8 @@ exports.createSauce = async (req, res, next) => {
     imageUrl: url + "/images/" + req.file.filename,
     heat: req.body.sauce.heat,
     userId: req.body.sauce.userId,
+    // usersLiked: "",
+    // usersDisliked: "",
   });
   try {
     const newSauce = await sauce.save();
@@ -143,14 +145,16 @@ exports.rateSauce = async (req, res, next) => {
   let rating = req.body.like;
   let chosenSauce = await Sauce.findOne({ _id: req.params.id });
   let userId = req.body.userId;
+  let likedArr = await chosenSauce.usersLiked;
+  let dislikedArr = await chosenSauce.usersDisliked;
   console.log(rating);
   console.log(req.body);
   // user liked sauce
   if (rating === 1) {
-    if (chosenSauce.usersLiked.length > 0) {
+    if (likedArr.length > 0) {
       // forbid like more than once for the same user
-      for (let l in chosenSauce.usersLiked) {
-        if (userId === chosenSauce.usersLiked[l]) {
+      for (let l in likedArr) {
+        if (userId === likedArr[l]) {
           return res.status(400).json({ message: "Already liked" });
         }
       }
@@ -205,11 +209,12 @@ exports.rateSauce = async (req, res, next) => {
 
   // user dislike the sauce
   if (rating === -1) {
-    if (chosenSauce.usersDisliked.length > 0) {
+    if (dislikedArr.length > 0) {
       // forbid dislike more than once for the same user
-      for (let d in chosenSauce.usersDisliked) {
-        if (userId === chosenSauce.usersDisliked[d]) {
-          return res.status(400).json({ message: "Already disliked" });
+      for (let d in dislikedArr) {
+        if (userId === dislikedArr[d]) {
+          res.status(400).json({ message: "Already disliked" });
+          // throw new Error();
         }
       }
     } else {
