@@ -25,8 +25,6 @@ exports.createSauce = async (req, res, next) => {
     imageUrl: url + "/images/" + req.file.filename,
     heat: req.body.sauce.heat,
     userId: req.body.sauce.userId,
-    // usersLiked: "",
-    // usersDisliked: "",
   });
   try {
     const newSauce = await sauce.save();
